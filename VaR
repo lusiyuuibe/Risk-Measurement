@@ -1,1 +1,53 @@
-# Risk-Measurement
+# 用MCS模拟股价终值，计算VaR（历史法）
+
+import numpy as np
+import scipy.stats as scs
+import matplotlib.plt as plt
+
+S0 = 100
+r = 0.05
+sigma = 0.25
+lamb = 0.75
+mu = -0.4
+delta = 0.25
+T = 30 / 365.    #计算一个月的VaR
+I = 10000
+dt = T / M
+
+#下面用Jump difussion Model计算股价
+
+rj = lamb * (np.exp(mu + 0.5 * delta ** 2) - 1)
+S = np.zeros((M + 1, I))
+S[0] = S0
+sn1 = np.random.standard_normal((M + 1, I))
+sn2 = np.random.standard_normal((M + 1, I))
+poi = np.random.poisson(lamb * dt, (M + 1, I))
+for t in range(1, M + 1, 1):
+    S[t] = S[t - 1] * (np.exp((r - rj - 0.5 * sigma ** 2) * dt
+                       + sigma * np.sqrt(dt) * sn1[t])
+                       + (np.exp(mu + delta * sn2[t]) - 1)
+                       * poi[t])
+    S[t] = np.maximum(S[t], 0)
+
+#下面计算VaR
+
+R_jd = np.sort(S[-1] - S0)
+percs = [0.01, 0.1, 1., 2.5, 5.0, 10.0]
+var = scs.scoreatpercentile(R_jd, percs)
+
+#下面打印计算结果
+
+print('%16s %16s' % ('Confidence Level', 'Value-at-Risk'))
+print(33 * '-')
+for pair in zip(percs, var):
+    print('%16.2f %16.3f' % (100 - pair[0], -pair[1]))
+    
+#下面画图
+
+plt.figure(figsize=(10, 6))
+plt.plot(percs, jd_var, 'r', lw=1.5, label='JD')
+plt.legend(loc=4)
+plt.xlabel('100 - confidence level [%]')
+plt.ylabel('value-at-risk')
+plt.ylim(ymax=0.0);
+# plt.savefig('../../images/ch12/stoch_20.png');
