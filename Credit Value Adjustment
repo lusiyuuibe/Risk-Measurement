@@ -1,0 +1,23 @@
+#CVA通常用于债券和衍生品考虑信用损失时的估值，而非用于计算股权
+
+import numpy as np
+
+S0 = 100.
+r = 0.05
+sigma = 0.2
+T = 1.
+I = 100000
+L = 0.5       #违约损失率
+p = 0.01      #违约概率
+
+#用MCS计算股价终值，这里采用股价布朗运动一次模拟期末股价
+
+ST = S0 * np.exp((r - 0.5 * sigma ** 2) * T 
+             + sigma * np.sqrt(T) * np.ramdom.standard_normal(I))
+             
+D = npr.poisson(p * T, I)         #违约次数服从泊松分布，得到T时间内违约概率
+D = np.where(D > 1, 1, D)         #限制违约次数不超过1次，即违约一次即倒闭或终止合作
+
+CVA = np.exp(-r * T) * np.mean(L * D * ST)      #CVaR是信用损失的现值
+S0_adj = S0 - CVA                     #考虑信用损失后的现值
+S0_CVA = np.math.exp(-r * T) * np.mean((1 - L * D) * ST)      #也可以计算考虑信用损失后的终止再折现
