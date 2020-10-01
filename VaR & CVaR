@@ -1,8 +1,10 @@
-# 用MCS模拟股价终值，计算VaR（历史法）
+# VaR是一定期间内置信区间下的最大损失。CVaR是一定期间内超过VaR时的期望损失
+
+1. 历史法计算VaR               # 用MCS模拟股价终值，从最差的收益率里计算VaR
 
 import numpy as np
 import scipy.stats as scs
-import matplotlib.plt as plt
+import matplotlib.pyplot as plt
 
 S0 = 100
 r = 0.05
@@ -35,6 +37,7 @@ R_jd = np.sort(S[-1] - S0)
 percs = [0.01, 0.1, 1., 2.5, 5.0, 10.0]
 var = scs.scoreatpercentile(R_jd, percs)
 
+
 #下面打印计算结果
 
 print('%16s %16s' % ('Confidence Level', 'Value-at-Risk'))
@@ -51,3 +54,26 @@ plt.xlabel('100 - confidence level [%]')
 plt.ylabel('value-at-risk')
 plt.ylim(ymax=0.0);
 # plt.savefig('../../images/ch12/stoch_20.png');
+
+
+
+2. 模型法计算VaR和CVaR  
+
+#假设收益率服从正态分布
+
+import numpy as np
+import scipy.stats as scs
+
+T = 5             #CVaR的计算期限
+mu = 0.06         #T时间里的收益率均值
+mu_T = T * mu / 252      
+sigma = 0.41      #收益率的年化波动率
+sigma_T = sigma * np.sqrt(T/252)       #T 时期的收益率波动率      
+alpha = 0.01            #显著性水平
+lev = 100*(1-alpha)       #置信区间
+ 
+CVaR_T = alpha**-1 * scs.norm.pdf(scs.norm.ppf(alpha))*sigma_T - mu_T
+VaR_T = scs.norm.ppf(1-alpha)*sigma_T - mu_T
+ 
+print("%g%% %g-day Normal CVaR   = %.2f%%" % (lev, T, CVaR_T *100))
+print("%g%% %g-day Normal VaR    = %.2f%%" % (lev, T, VaR_T*100))
