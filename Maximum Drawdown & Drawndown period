@@ -1,0 +1,24 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+raw = pd.read_csv('http://hilpisch.com/tr_eikon_eod_data.csv', index_col=0, parse_dates=True)
+symbol = 'AAPL.O'
+data = pd.DataFrame(raw[symbol]).dropna()
+
+equity = 1000      #资产组合金额
+data['Returns'] = np.log(data[symbol] / data[symbol].shift(1))  
+data['equity'] = data['Returns'].cumsum().apply(np.exp) * equity      #各时点资产组合的累积终值
+data['cummax'] = data['equity'].cummax()          #各时点数值为此前的最大值
+data['drawdown'] = data['cummax'] - data['equity']
+data['drawdown'].max()        #最大回撤
+data['drawdown'].idxmax()        #最大回撤的位置
+
+temp = data['drawdown'][data['drawdown'] == 0]      #找到各个回撤为0的点
+periods = (temp.index[1:].to_pydatetime() - temp.index[:-1].to_pydatetime()) 
+drawdown_period = periods.max()       #回撤周期
+
+
+
+data[['equity', 'cummax']].plot(figsize=(10, 6))
+plt.axvline(t_max, c='r', alpha=0.5);
