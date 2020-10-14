@@ -46,13 +46,17 @@ percs = [0.01, 0.1, 1., 2.5, 5.0, 10.0]
 var = scs.scoreatpercentile(Rets, percs)
 
 
-#下面打印计算结果
+#打印计算结果的函数
 
-print('%16s %16s' % ('Confidence Level', 'Value-at-Risk'))
-print(33 * '-')
-for pair in zip(percs, var):
-    print('%16.2f %16.3f' % (100 - pair[0], -pair[1]))
-    
+define print_VaR():
+    print('%16s %16s' % ('Confidence Level', 'Value-at-Risk'))
+    print(33 * '-')
+    for pair in zip(percs, var):
+        print('%16.2f %16.3f' % (100 - pair[0], -pair[1]))
+
+print_VaR()    
+
+
 #下面画图
 
 plt.figure(figsize=(10, 6))
